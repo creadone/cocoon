@@ -1,5 +1,3 @@
-require "http/client"
-
 module Cocoon
   VERSION = `shards version`
 
@@ -13,17 +11,14 @@ module Cocoon
     def wrap(&block : -> T) forall T
       spawn(name: "executor") do
         @result.send block.call
-      rescue ex
-        @result.send ex
+        rescue ex
+          @result.send ex
       end
 
       Fiber.yield
 
       spawn(name: "receiver") do
-        select
-        when data = @result.receive
-          @output.send data
-        end
+        @output.send @result.receive
       end
       @output
     end

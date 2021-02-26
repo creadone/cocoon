@@ -1,3 +1,4 @@
+require "log"
 require "json"
 require "../src/cocoon"
 require "http/client"
@@ -11,9 +12,13 @@ channel = cocoon.wrap do
 end
 
 if resp = channel.receive
-  if resp.is_a?(Response) && resp.success?
-    pp JSON.parse(resp.body)
+  if resp.is_a?(Response)
+    if resp.success?
+      pp Array(Hash(String, JSON::Any)).from_json(resp.body)
+    else
+      Log.warn{ HTTP::Status.new(resp.status_code).description }
+    end
   elsif resp.is_a?(Exception)
-    # log it and raise resp
+    Log.warn exception: resp, &.emit("Hi dear! I missed you.")
   end
 end

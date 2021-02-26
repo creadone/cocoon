@@ -1,11 +1,11 @@
 name: cocoon
-version: 0.1.0
+version: 0.1.1
 
 authors:
   - Sergey Fedorov <creadone@gmail.com>
 
 description: |
-  Helper for wrap third-party API calls
+  Wrapper for IO such as third-party API calls to prevent sudden blow up the main program.
 
 crystal: 0.36.1
 
