@@ -18,7 +18,9 @@ module Cocoon
       Fiber.yield
 
       spawn(name: "receiver") do
-        @output.send @result.receive
+        if data = @result.receive
+          @output.send data
+        end
       end
       @output
     end
