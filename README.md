@@ -17,29 +17,46 @@ dependencies:
 ## Usage
 
 ```crystal
-require "json"
 require "cocoon"
 require "http/client"
 
 alias Response = HTTP::Client::Response
 cocoon = Cocoon::Wrapper(Response).new
 
-channel = cocoon.wrap do
-  headers = HTTP::Headers{ "Accept" => "application/vnd.github.v3+json" }
-  HTTP::Client.get "https://api.github.com/networks/crystal-lang/crystal/events", headers: headers
+loop do
+  result = cocoon.wrap do
+    if Random.rand > 0.5
+      HTTP::Client.get("https://github.com")
+    else
+      raise "Connection is lost"
+    end
+  end
+
+  # something in the &block raised Exception
+  if result.is_a?(Exception)
+    puts result.message
+  end
+
+  # &block is done
+  if result.is_a?(Response)
+    puts "X-GitHub-Request-Id: #{result.headers["X-GitHub-Request-Id"]}"
+  end
+
+  # &block has no result or task is not ended yet
+  if result.is_a?(Nil)
+    puts "Nothing..."
+  end
+
+  sleep 1
 end
 
-if resp = channel.receive
-  if resp.is_a?(Response)
-    if resp.success?
-      pp Array(Hash(String, JSON::Any)).from_json(resp.body)
-    else
-      Log.warn{ HTTP::Status.new(resp.status_code).description }
-    end
-  elsif resp.is_a?(Exception)
-    Log.warn exception: resp, &.emit("Hi dear! I missed you.")
-  end
-end
+# => Nothing...
+# => X-GitHub-Request-Id: EF51:10C35:3A33E0D:3BCCF8A:603C72E7
+# => Connection is lost
+# => X-GitHub-Request-Id: EF52:0AF5:44114C4:45B5044:603C72E9
+# => X-GitHub-Request-Id: EF53:E298:B55ADC:B9B0DF:603C72EA
+# => Connection is lost
+# => Connection is lost
 ```
 
 ## Contributing
