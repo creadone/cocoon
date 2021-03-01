@@ -10,7 +10,9 @@ module Cocoon
 
     def wrap(&block : -> T) forall T
       spawn(name: "executor") do
-        @result.send block.call
+        if data = block.call
+          @result.send data
+        end
         rescue ex
           @result.send ex
       end
