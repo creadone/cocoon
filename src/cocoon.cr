@@ -22,8 +22,6 @@ module Cocoon
         select
         when data = @result.receive
           @output.send data
-        else
-          @output.send nil
         end
       end
       @output.receive
